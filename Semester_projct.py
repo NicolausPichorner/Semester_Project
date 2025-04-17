@@ -1,9 +1,13 @@
-import time
+# Full Project Implementation: Social Media Post Analysis System
 
-# ---- Class Definitions ----
+
+
+
+# ---- Class Definition ----
+
 
 class SocialMediaPost:
-    def __init__(self, post_id, content, likes, viral, controversial, logic_expr):
+    def __init__(self, post_id: int, content: str, likes: int, viral: bool, controversial: bool, logic_expr: str):
         self.post_id = post_id
         self.content = content
         self.likes = likes
@@ -12,31 +16,41 @@ class SocialMediaPost:
         self.logic_expr = logic_expr
         self.logic_result = self.evaluate_expression()
 
-    def evaluate_expression(self):
-        try:
-            expr = self.logic_expr.replace("∧", "and").replace("∨", "or").replace("¬", "not ")
-            expr = expr.replace("→", "(not self.viral or self.controversial)").replace("↔", "(self.viral == self.controversial)")
-            return eval(expr, {}, {"self": self})
-        except Exception:
-            return False
+    def evaluate_expression(self) -> bool:
+        if self.logic_expr == "p ∧ q":
+            return self.viral and self.controversial
+        elif self.logic_expr == "p ∨ q":
+            return self.viral or self.controversial
+        elif self.logic_expr == "¬q":
+            return not self.controversial
+        elif self.logic_expr == "p → q":
+            return not self.viral or self.controversial
+        elif self.logic_expr == "p ↔ q":
+            return self.viral == self.controversial
+        return False
 
-    def display_truth_table(self):
-        table = []
+    def get_summary(self) -> tuple:
+        return (self.post_id, self.likes, self.logic_expr, self.logic_result, self.content)
+
+    def print_truth_table(self):
+        print(f"\nTruth Table for expression '{self.logic_expr}'")
+        print("p (viral) | q (controversial) | Result")
         for p in [True, False]:
             for q in [True, False]:
-                self.viral = p
-                self.controversial = q
-                result = self.evaluate_expression()
-                table.append((p, q, result))
-        return table
+                temp = SocialMediaPost(self.post_id, "", 0, p, q, self.logic_expr)
+                print(f"{p:<9} | {q:<16} | {temp.logic_result}")
 
-    def __str__(self):
-        return f"Post ID: {self.post_id} | Likes: {self.likes} | Logic: {self.logic_expr} = {self.logic_result} | Content: {self.content}"
+
+
+
 
 
 # ---- Sorting Algorithms ----
 
-# Insertion Sort (loop-based)
+
+
+
+# Insertion Sort (Loop)
 def insertion_sort(posts):
     for i in range(1, len(posts)):
         key = posts[i]
@@ -48,7 +62,7 @@ def insertion_sort(posts):
         posts[j + 1] = key
     return posts
 
-# Merge Sort (recursive)
+# Merge Sort (Recursion)
 def merge_sort(posts):
     if len(posts) <= 1:
         return posts
@@ -60,92 +74,68 @@ def merge_sort(posts):
 def merge(left, right):
     result = []
     while left and right:
-        if (left[0].likes > right[0].likes or
-            (left[0].likes == right[0].likes and left[0].logic_result and not right[0].logic_result)):
+        a = left[0]
+        b = right[0]
+        if (a.likes > b.likes) or (a.likes == b.likes and a.logic_result and not b.logic_result):
             result.append(left.pop(0))
         else:
             result.append(right.pop(0))
     return result + left + right
 
-
-# ---- Search Algorithm ----
-
-def search_by_keyword(posts, keyword):
-    return [post for post in posts if keyword.lower() in post.content.lower()]
-
-
-# ---- Performance Analysis ----
-
-def measure_sorting_time(sort_func, posts):
-    start_time = time.time()
-    sorted_posts = sort_func(posts[:])
-    end_time = time.time()
-    duration = end_time - start_time
-    return sorted_posts, duration
-
-
-# ---- Sample Dataset ----
-
-default_posts = [
-    SocialMediaPost(1, "Cats dancing under moonlight", 120, True, False, "viral ∧ controversial"),
-    SocialMediaPost(2, "Politics today: chaos or clarity?", 90, True, True, "viral ∧ controversial"),
-    SocialMediaPost(3, "Top 10 travel destinations", 150, True, False, "viral → controversial"),
-    SocialMediaPost(4, "Memes that broke the internet", 120, False, True, "viral ∨ controversial"),
-    SocialMediaPost(5, "AI taking over the world?", 130, True, True, "¬controversial"),
-    SocialMediaPost(6, "Peaceful piano for work", 75, False, False, "viral ↔ controversial"),
-]
-
-
-# ---- User Interaction ----
-
-def display_menu():
-    print("\n==== SOCIAL MEDIA POST ANALYSIS SYSTEM ====")
-    print("1. Show all posts")
-    print("2. Sort by Insertion Sort")
-    print("3. Sort by Merge Sort")
-    print("4. Search by keyword")
-    print("5. Show truth table of a post")
-    print("6. Exit")
-    return input("Choose an option (1-6): ")
+# ---- Display Functions ----
 
 def display_posts(posts):
+    print("\nSorted Posts:")
     for post in posts:
-        print(post)
+        print(f"{post.post_id}. '{post.content}' | Likes: {post.likes} | Logic: {post.logic_expr} = {post.logic_result}")
 
-def run_system(posts):
-    while True:
-        choice = display_menu()
-        if choice == "1":
-            display_posts(posts)
-        elif choice == "2":
-            sorted_posts, duration = measure_sorting_time(insertion_sort, posts)
-            print(f"\nSorted with Insertion Sort (Time: {duration:.6f}s):")
-            display_posts(sorted_posts)
-        elif choice == "3":
-            sorted_posts, duration = measure_sorting_time(merge_sort, posts)
-            print(f"\nSorted with Merge Sort (Time: {duration:.6f}s):")
-            display_posts(sorted_posts)
-        elif choice == "4":
-            keyword = input("Enter keyword to search for: ")
-            found = search_by_keyword(posts, keyword)
-            print(f"\nFound {len(found)} posts:")
-            display_posts(found)
-        elif choice == "5":
-            post_id = int(input("Enter Post ID to show its truth table: "))
-            for post in posts:
-                if post.post_id == post_id:
-                    table = post.display_truth_table()
-                    print(f"\nTruth Table for expression: {post.logic_expr}")
-                    print("Viral | Controversial | Result")
-                    for row in table:
-                        print(f"{row[0]}     | {row[1]}          | {row[2]}")
-        elif choice == "6":
-            print("Exiting... Bye!")
-            break
-        else:
-            print("Invalid choice. Please select a number between 1 and 6.")
+def show_truth_table(posts, post_id):
+    for post in posts:
+        if post.post_id == post_id:
+            post.print_truth_table()
+            return
 
+# ---- Sample Dataset (list + tuple + dict included) ----
 
-# ---- Start Application ----
+posts_list = [
+    SocialMediaPost(1, "Funny cat video", 120, True, False, "p ∧ q"),
+    SocialMediaPost(2, "Politics debate", 90, True, True, "p ∧ q"),
+    SocialMediaPost(3, "Travel tips", 150, True, False, "p → q"),
+    SocialMediaPost(4, "Meme collection", 120, False, True, "p ∨ q"),
+    SocialMediaPost(5, "AI news", 130, True, True, "¬q"),
+    SocialMediaPost(6, "Piano playlist", 75, False, False, "p ↔ q")
+]
 
-run_system(default_posts)
+# tuple: storing available expressions
+logic_options = ("p ∧ q", "p ∨ q", "¬q", "p → q", "p ↔ q")
+
+# dictionary: mapping post ID to content
+post_dict = {post.post_id: post.content for post in posts_list}
+
+# ---- Simple Console Menu Logic (print only version) ----
+
+def run_final_project_simulation():
+    print("=== SOCIAL MEDIA POST ANALYSIS TOOL ===")
+    print("Initial Posts:")
+    display_posts(posts_list)
+
+    sorted_by_insertion = insertion_sort(posts_list[:])
+    print("\n--- Sorted by Insertion Sort ---")
+    display_posts(sorted_by_insertion)
+
+    sorted_by_merge = merge_sort(posts_list[:])
+    print("\n--- Sorted by Merge Sort ---")
+    display_posts(sorted_by_merge)
+
+    print("\n--- Displaying Truth Table for Post ID 2 ---")
+    show_truth_table(posts_list, 2)
+
+    print("\n--- Logic Expressions Available ---")
+    for expr in logic_options:
+        print(f"- {expr}")
+
+    print("\n--- Post Dictionary (ID to Content) ---")
+    for pid, text in post_dict.items():
+        print(f"{pid}: {text}")
+
+run_final_project_simulation()
