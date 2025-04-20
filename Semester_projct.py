@@ -24,25 +24,67 @@ ammo_data = []
 
 # 2. Manual input function
 def manual_input():
-    print("Enter ammunition data (type 'done' to stop):")
+    print("Enter ammunition data (type 'done' anytime to stop):")
+    allowed_calibers = ['.308', '30-06 Springfield', '300 Win Mag', '243']
+    next_id = len(ammo_data) + 1  # continue numbering from existing entries
+
     while True:
-        post_id = input("ID: ")
-        if post_id.lower() == 'done':
+        lead_free = input("Is the bullet lead free? (yes/no): ").strip().lower()
+        if lead_free == 'done':
             break
+        if lead_free not in ['yes', 'no']:
+            print("Please enter 'yes' or 'no'.")
+            continue
+
+        manufacturer = input("Manufacturer: ")
+        if manufacturer.lower() == 'done':
+            break
+
+        name = input("Product name: ")
+        if name.lower() == 'done':
+            break
+
+        # Caliber selection
+        print("Select caliber from the following:")
+        for i, cal in enumerate(allowed_calibers, 1):
+            print(f"{i}. {cal}")
+        cal_choice = input("Enter number: ")
+        if cal_choice.lower() == 'done':
+            break
+        if not cal_choice.isdigit() or not (1 <= int(cal_choice) <= len(allowed_calibers)):
+            print("Invalid selection. Please enter a number from the list.")
+            continue
+        caliber = allowed_calibers[int(cal_choice) - 1]
+
+        try:
+            bullet_weight = float(input("Bullet weight (e.g., 9.7): ").replace(',', '.'))
+            grain = float(input("Grain (whole number or decimal, e.g., 150 or 150.5): ").replace(',', '.'))
+            j_0m = float(input("Energy at 0 m (Joules): ").replace(',', '.'))
+            j_150m = float(input("Energy at 150 m (Joules): ").replace(',', '.'))
+            v_0m = float(input("Speed at 0 m (m/s): ").replace(',', '.'))
+            v_150m = float(input("Speed at 150 m (m/s): ").replace(',', '.'))
+        except ValueError:
+            print("Invalid input! Use numbers with '.' or ',' for decimal values.")
+            continue
+
         ammo = {
-            'ID': post_id,
-            'lead_free': input("Lead free (yes/no): "),
-            'manufacturer': input("Manufacturer: "),
-            'name': input("Name: "),
-            'caliber': input("Caliber: "),
-            'bullet_weight': float(input("Bullet Weight: ")),
-            'grain': float(input("Grain: ")),
-            'j_0m': float(input("0 m (J): ")),
-            'j_150m': float(input("150 m (J): ")),
-            'v_0m': float(input("0 m (m/s): ")),
-            'v_150m': float(input("150 m (m/s): "))
+            'ID': str(next_id),
+            'lead_free': lead_free,
+            'manufacturer': manufacturer,
+            'name': name,
+            'caliber': caliber,
+            'bullet_weight': bullet_weight,
+            'grain': grain,
+            'j_0m': j_0m,
+            'j_150m': j_150m,
+            'v_0m': v_0m,
+            'v_150m': v_150m
         }
+
         ammo_data.append(ammo)
+        next_id += 1
+        print("✅ Entry added!\n")
+
 
 # 3. File upload function
 def file_upload(filename):
@@ -104,12 +146,18 @@ def average_grain_per_caliber():
 
 # 8. Remove duplicates by ID
 def remove_duplicates():
-    unique = {}
-    for item in ammo_data:
-        unique[item['ID']] = item
-    print(f"Removed {len(ammo_data) - len(unique)} duplicates.")
     global ammo_data
-    ammo_data = list(unique.values())
+    seen = []
+    unique = []
+    for item in ammo_data:
+        if item not in seen:
+            seen.append(item)
+            unique.append(item)
+    removed = len(ammo_data) - len(unique)
+    ammo_data = unique
+    print(f"Removed {removed} exact duplicate(s).")
+
+
 
 # 9. Most common caliber and bullet weight
 def most_common():
