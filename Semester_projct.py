@@ -69,6 +69,18 @@ def manual_input():
             print("Invalid input! Use numbers with '.' or ',' for decimal values.")
             continue
 
+              # Prüfen ob bereits ein Eintrag mit gleichem Hersteller und Namen existiert
+        duplicate_found = any(
+            entry['manufacturer'].lower() == manufacturer.lower() and
+            entry['name'].lower() == name.lower()
+            for entry in ammo_data
+        )
+
+        if duplicate_found:
+            print(f"❌ Entry with manufacturer '{manufacturer}' and name '{name}' already exists. Skipping entry.\n")
+            continue  # ⚠️ zurück zur nächsten Eingabe
+
+        # Nur wenn kein Duplikat vorhanden ist, hinzufügen
         ammo = {
             'ID': str(next_id),
             'lead_free': lead_free,
@@ -86,6 +98,7 @@ def manual_input():
         ammo_data.append(ammo)
         next_id += 1
         print("✅ Entry added!\n")
+
 
 # 2. Merge Sort (by single or multi-key)
 def merge_sort(data, keys):
