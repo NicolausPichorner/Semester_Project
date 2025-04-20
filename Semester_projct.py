@@ -16,8 +16,11 @@
 
 # Ammunition Database Program (based on your slides knowledge)
 # Features: manual/file input, merge sort, search, display, average, multi-column sort, duplicate removal, stats
+# Ammunition Database Program (based on your slides knowledge)
+# Features: manual/file input, merge sort, search, display, average, multi-column sort, duplicate removal, stats
 
 import csv
+from collections import Counter
 
 # 1. Data Structure: a list of dictionaries
 ammo_data = []
@@ -26,7 +29,7 @@ ammo_data = []
 def manual_input():
     print("Enter ammunition data (type 'done' anytime to stop):")
     allowed_calibers = ['.308', '30-06 Springfield', '300 Win Mag', '243']
-    next_id = len(ammo_data) + 1  # continue numbering from existing entries
+    next_id = len(ammo_data) + 1
 
     while True:
         lead_free = input("Is the bullet lead free? (yes/no): ").strip().lower()
@@ -44,7 +47,6 @@ def manual_input():
         if name.lower() == 'done':
             break
 
-        # Caliber selection
         print("Select caliber from the following:")
         for i, cal in enumerate(allowed_calibers, 1):
             print(f"{i}. {cal}")
@@ -58,7 +60,7 @@ def manual_input():
 
         try:
             bullet_weight = float(input("Bullet weight (e.g., 9.7): ").replace(',', '.'))
-            grain = float(input("Grain (whole number or decimal, e.g., 150 or 150.5): ").replace(',', '.'))
+            grain = float(input("Grain (e.g., 150 or 150.5): ").replace(',', '.'))
             j_0m = float(input("Energy at 0 m (Joules): ").replace(',', '.'))
             j_150m = float(input("Energy at 150 m (Joules): ").replace(',', '.'))
             v_0m = float(input("Speed at 0 m (m/s): ").replace(',', '.'))
@@ -85,20 +87,6 @@ def manual_input():
         next_id += 1
         print("✅ Entry added!\n")
 
-
-# 3. File upload function
-def file_upload(filename):
-    with open(filename, newline='') as csvfile:
-        reader = csv.DictReader(csvfile)
-        for row in reader:
-            row['bullet_weight'] = float(row['bullet_weight'])
-            row['grain'] = float(row['grain'])
-            row['j_0m'] = float(row['j_0m'])
-            row['j_150m'] = float(row['j_150m'])
-            row['v_0m'] = float(row['v_0m'])
-            row['v_150m'] = float(row['v_150m'])
-            ammo_data.append(row)
-
 # 4. Merge Sort (by single or multi-key)
 def merge_sort(data, keys):
     if len(data) <= 1:
@@ -122,6 +110,9 @@ def merge(left, right, keys):
 
 # 5. Display function
 def display_data():
+    if not ammo_data:
+        print("No data to display.")
+        return
     print("\nID | LeadFree | Manufacturer | Name | Caliber | BulletWeight | Grain | J@0m | J@150m | V@0m | V@150m")
     for item in ammo_data:
         print(f"{item['ID']} | {item['lead_free']} | {item['manufacturer']} | {item['name']} | {item['caliber']} | {item['bullet_weight']} | {item['grain']} | {item['j_0m']} | {item['j_150m']} | {item['v_0m']} | {item['v_150m']}")
@@ -144,7 +135,7 @@ def average_grain_per_caliber():
         avg = sum(calibers[cal]) / len(calibers[cal])
         print(f"Average grain for {cal}: {avg:.2f}")
 
-# 8. Remove duplicates by ID
+# 8. Remove duplicates by full entry
 def remove_duplicates():
     global ammo_data
     seen = []
@@ -157,11 +148,8 @@ def remove_duplicates():
     ammo_data = unique
     print(f"Removed {removed} exact duplicate(s).")
 
-
-
 # 9. Most common caliber and bullet weight
 def most_common():
-    from collections import Counter
     calibers = [item['caliber'] for item in ammo_data]
     weights = [item['bullet_weight'] for item in ammo_data]
     print("Most common caliber:", Counter(calibers).most_common(1)[0])
@@ -171,42 +159,56 @@ def most_common():
 while True:
     print("""
     1. Manual input
-    2. Upload from file
-    3. Sort data
-    4. Search data
-    5. Display data
-    6. Average grain per caliber
-    7. Multi-column sort
-    8. Remove duplicates
-    9. Most common values
-    10. Exit
+    2. Sort data
+    3. Search data
+    4. Display data
+    5. Average grain per caliber
+    6. Multi-column sort
+    7. Remove duplicates
+    8. Most common values
+    9. Exit
     """)
     choice = input("Choose: ")
 
     if choice == '1':
         manual_input()
     elif choice == '2':
-        filename = input("CSV file name: ")
-        file_upload(filename)
+        if not ammo_data:
+            print("❌ No data available to sort. Please add or upload data first.\n")
+            continue
+
+        print("\nAvailable sort keys:")
+        print("lead_free, manufacturer, name, caliber, bullet_weight, grain, j_0m, j_150m, v_0m, v_150m")
+        key = input("Enter one field to sort by: ").strip()
+
+        valid_keys = ['lead_free', 'manufacturer', 'name', 'caliber',
+                      'bullet_weight', 'grain', 'j_0m', 'j_150m', 'v_0m', 'v_150m']
+
+        if key in valid_keys:
+            ammo_data = merge_sort(ammo_data, [key])
+            print(f"✅ Sorted by '{key}'. Sorted list:\n")
+            display_data()
+            input("\nPress Enter to return to menu...")
+        else:
+            print("❌ Invalid key. Please try again.\n")
     elif choice == '3':
-        key = input("Sort by key: ")
-        ammo_data = merge_sort(ammo_data, [key])
-    elif choice == '4':
         term = input("Search term: ")
         search_data(term)
-    elif choice == '5':
+    elif choice == '4':
         display_data()
-    elif choice == '6':
+    elif choice == '5':
         average_grain_per_caliber()
-    elif choice == '7':
+    elif choice == '6':
         keys = input("Enter keys separated by comma (e.g., lead_free,caliber,v_150m): ").split(',')
         ammo_data = merge_sort(ammo_data, keys)
-    elif choice == '8':
+        print("✅ Sorted by multiple keys.")
+        display_data()
+    elif choice == '7':
         remove_duplicates()
-    elif choice == '9':
+    elif choice == '8':
         most_common()
-    elif choice == '10':
-        print("Exiting program.")
+    elif choice == '9':
+        print("Exiting program. Thanks for using the Ammunition Database!")
         break
     else:
         print("Invalid choice.")
