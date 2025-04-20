@@ -14,12 +14,7 @@
 # 10. find the most common caliber and bullet weight
 # 11. exit 
 
-# Ammunition Database Program (based on your slides knowledge)
-# Features: manual/file input, merge sort, search, display, average, multi-column sort, duplicate removal, stats
-# Ammunition Database Program (based on your slides knowledge)
-# Features: manual/file input, merge sort, search, display, average, multi-column sort, duplicate removal, stats
 
-import csv
 from collections import Counter
 
 # Data Structure: a list of dictionaries
@@ -69,7 +64,6 @@ def manual_input():
             print("Invalid input! Use numbers with '.' or ',' for decimal values.")
             continue
 
-              # Prüfen ob bereits ein Eintrag mit gleichem Hersteller und Namen existiert
         duplicate_found = any(
             entry['manufacturer'].lower() == manufacturer.lower() and
             entry['name'].lower() == name.lower()
@@ -78,9 +72,9 @@ def manual_input():
 
         if duplicate_found:
             print(f"❌ Entry with manufacturer '{manufacturer}' and name '{name}' already exists. Skipping entry.\n")
-            continue  # ⚠️ zurück zur nächsten Eingabe
+            continue  
 
-        # Nur wenn kein Duplikat vorhanden ist, hinzufügen
+        
         ammo = {
             'ID': str(next_id),
             'lead_free': lead_free,
@@ -162,7 +156,6 @@ def remove_duplicates():
     print(f"Removed {removed} exact duplicate(s).")
 
 # 9. Most common caliber and bullet weight
-# ✅ 9. Most common caliber and bullet weight (verbessert mit Failsafe)
 def most_common():
     if not ammo_data:
         print("❌ No data available. Please enter or upload ammunition data first.")
@@ -186,19 +179,22 @@ def most_common():
 
 # 10. Main loop
 while True:
-    print("""
-    1. Manual input
-    2. Sort data
-    3. Search data
-    4. Display data
-    5. Average grain per caliber
-    6. Multi-column sort
-    7. Remove duplicates
-    8. Most common values caliber and bullet weight
-    9. Exit
-    """)
+    print("\n" + "="*50)
+    print("      🔍 Ammunition Database – Main Menu")
+    print("="*50)
+    print(" 1. ➕ Manual input")
+    print(" 2. 🔀 Sort data")
+    print(" 3. 🔎 Search data")
+    print(" 4. 📋 Display all entries")
+    print(" 5. 📊 Average grain per caliber")
+    print(" 6. 🧮 Multi-column sort")
+    print(" 7. ❌ Remove duplicates")
+    print(" 8. 📈 Most common caliber & bullet weight")
+    print(" 9. 🚪 Exit")
+    print("="*50)
 
-    choice = input("Choose: ")
+    choice = input("Please enter your choice (1–9): ")
+
 
     if choice == '1':
         manual_input()
@@ -236,7 +232,7 @@ while True:
         keys = [k.strip() for k in keys if k.strip()] 
 
         valid_keys = ['lead_free', 'manufacturer', 'name', 'caliber',
-                      'bullet_weight', 'grain', 'j_0m', 'j_150m', 'v_0m', 'v_1506']
+                      'bullet_weight', 'grain', 'j_0m', 'j_150m', 'v_0m', 'v_150m']
 
         if all(k in valid_keys for k in keys):
             ammo_data = merge_sort(ammo_data, keys)  
