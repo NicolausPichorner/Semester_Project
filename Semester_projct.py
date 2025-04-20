@@ -22,10 +22,10 @@
 import csv
 from collections import Counter
 
-# 1. Data Structure: a list of dictionaries
+# Data Structure: a list of dictionaries
 ammo_data = []
 
-# 2. Manual input function
+# 1. Manual input function
 def manual_input():
     print("Enter ammunition data (type 'done' anytime to stop):")
     allowed_calibers = ['.308', '30-06 Springfield', '300 Win Mag', '243']
@@ -87,7 +87,7 @@ def manual_input():
         next_id += 1
         print("✅ Entry added!\n")
 
-# 4. Merge Sort (by single or multi-key)
+# 2. Merge Sort (by single or multi-key)
 def merge_sort(data, keys):
     if len(data) <= 1:
         return data
@@ -108,7 +108,13 @@ def merge(left, right, keys):
     result += left + right
     return result
 
-# 5. Display function
+# 3. Search function
+def search_data(keyword):
+    results = [item for item in ammo_data if keyword.lower() in str(item).lower()]
+    for r in results:
+        print(r)
+
+# 4. Display function
 def display_data():
     if not ammo_data:
         print("No data to display.")
@@ -117,13 +123,7 @@ def display_data():
     for item in ammo_data:
         print(f"{item['ID']} | {item['lead_free']} | {item['manufacturer']} | {item['name']} | {item['caliber']} | {item['bullet_weight']} | {item['grain']} | {item['j_0m']} | {item['j_150m']} | {item['v_0m']} | {item['v_150m']}")
 
-# 6. Search function
-def search_data(keyword):
-    results = [item for item in ammo_data if keyword.lower() in str(item).lower()]
-    for r in results:
-        print(r)
-
-# 7. Average grain per caliber
+# 5. Average grain per caliber
 def average_grain_per_caliber():
     calibers = {}
     for item in ammo_data:
@@ -135,7 +135,7 @@ def average_grain_per_caliber():
         avg = sum(calibers[cal]) / len(calibers[cal])
         print(f"Average grain for {cal}: {avg:.2f}")
 
-# 8. Remove duplicates by full entry
+# 7. Remove duplicates by full entry
 def remove_duplicates():
     global ammo_data
     seen = []
@@ -149,11 +149,27 @@ def remove_duplicates():
     print(f"Removed {removed} exact duplicate(s).")
 
 # 9. Most common caliber and bullet weight
+# ✅ 9. Most common caliber and bullet weight (verbessert mit Failsafe)
 def most_common():
+    if not ammo_data:
+        print("❌ No data available. Please enter or upload ammunition data first.")
+        return
+
     calibers = [item['caliber'] for item in ammo_data]
     weights = [item['bullet_weight'] for item in ammo_data]
-    print("Most common caliber:", Counter(calibers).most_common(1)[0])
-    print("Most common bullet weight:", Counter(weights).most_common(1)[0])
+
+    if calibers:
+        common_caliber = Counter(calibers).most_common(1)[0]
+        print(f"✅ Most common caliber: {common_caliber[0]} ({common_caliber[1]}x)")
+    else:
+        print("❌ No caliber data available.")
+
+    if weights:
+        common_weight = Counter(weights).most_common(1)[0]
+        print(f"✅ Most common bullet weight: {common_weight[0]} ({common_weight[1]}x)")
+    else:
+        print("❌ No bullet weight data available.")
+
 
 # 10. Main loop
 while True:
@@ -165,9 +181,10 @@ while True:
     5. Average grain per caliber
     6. Multi-column sort
     7. Remove duplicates
-    8. Most common values
+    8. Most common values caliber and bullet weight
     9. Exit
     """)
+
     choice = input("Choose: ")
 
     if choice == '1':
@@ -199,9 +216,26 @@ while True:
     elif choice == '5':
         average_grain_per_caliber()
     elif choice == '6':
+        print("\nAvailable sort keys:")
+        print("lead_free, manufacturer, name, caliber, bullet_weight, grain, j_0m, j_150m, v_0m, v_150m")
+
         keys = input("Enter keys separated by comma (e.g., lead_free,caliber,v_150m): ").split(',')
-        ammo_data = merge_sort(ammo_data, keys)
-        print("✅ Sorted by multiple keys.")
+        keys = [k.strip() for k in keys if k.strip()] 
+
+        valid_keys = ['lead_free', 'manufacturer', 'name', 'caliber',
+                      'bullet_weight', 'grain', 'j_0m', 'j_150m', 'v_0m', 'v_1506']
+
+        if all(k in valid_keys for k in keys):
+            ammo_data = merge_sort(ammo_data, keys)  
+            print("✅ Sorted by multiple keys:", ', '.join(keys))
+            display_data()  
+            input("\nPress Enter to return to menu...")  
+        else:
+            print("❌ Invalid key(s). Please only use valid field names.")
+            input("Press Enter to return to menu...")
+        print("❌ Invalid key(s). Please only use valid field names.")
+        input("Press Enter to return to menu...")
+
         display_data()
     elif choice == '7':
         remove_duplicates()
