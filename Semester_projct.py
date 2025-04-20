@@ -91,7 +91,7 @@ def manual_input():
 
         ammo_data.append(ammo)
         next_id += 1
-        print("✅ Entry added!\n")
+        print("✅ Entry added! Wirte done to exit.\n")
 
 
 # 2. Merge Sort (by single or multi-key)
@@ -142,20 +142,9 @@ def average_grain_per_caliber():
         avg = sum(calibers[cal]) / len(calibers[cal])
         print(f"Average grain for {cal}: {avg:.2f}")
 
-# 7. Remove duplicates by full entry
-def remove_duplicates():
-    global ammo_data
-    seen = []
-    unique = []
-    for item in ammo_data:
-        if item not in seen:
-            seen.append(item)
-            unique.append(item)
-    removed = len(ammo_data) - len(unique)
-    ammo_data = unique
-    print(f"Removed {removed} exact duplicate(s).")
 
-# 9. Most common caliber and bullet weight
+
+# 7. Most common caliber and bullet weight
 def most_common():
     if not ammo_data:
         print("❌ No data available. Please enter or upload ammunition data first.")
@@ -188,12 +177,11 @@ while True:
     print(" 4. 📋 Display all entries")
     print(" 5. 📊 Average grain per caliber")
     print(" 6. 🧮 Multi-column sort")
-    print(" 7. ❌ Remove duplicates")
-    print(" 8. 📈 Most common caliber & bullet weight")
-    print(" 9. 🚪 Exit")
+    print(" 7. 📈 Most common caliber & bullet weight")
+    print(" 8. 🚪 Exit")
     print("="*50)
 
-    choice = input("Please enter your choice (1–9): ")
+    choice = input("Please enter your choice (1–8): ")
 
 
     if choice == '1':
@@ -247,10 +235,8 @@ while True:
 
         display_data()
     elif choice == '7':
-        remove_duplicates()
-    elif choice == '8':
         most_common()
-    elif choice == '9':
+    elif choice == '8':
         print("Exiting program. Thanks for using the Ammunition Database!")
         break
     else:
