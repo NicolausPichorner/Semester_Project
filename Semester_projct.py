@@ -91,7 +91,7 @@ def manual_input():
 
         ammo_data.append(ammo)
         next_id += 1
-        print("✅ Entry added! Wirte done to exit.\n")
+        print("✅ Entry added! Write done to exit.\n")
 
 
 # 2. Merge Sort (by single or multi-key)
