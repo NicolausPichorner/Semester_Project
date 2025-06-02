@@ -22,12 +22,20 @@ class AbstractAmmunition(ABC):
     def __str__(self):
         pass
 
+    @abstractmethod
+    def get_sort_key(self, key):
+        pass
+
 # Ammunition 
 class Ammunition(AbstractAmmunition):
     def __str__(self):
         return (f"{self.id} | {self.lead_free} | {self.manufacturer} | {self.name} | "
                 f"{self.caliber} | {self.bullet_weight} | {self.grain} | "
                 f"{self.j_0m} | {self.j_150m} | {self.v_0m} | {self.v_150m}")
+    
+    def get_sort_key(self, key):
+        return getattr(self, key)
+
 
 # Subclass for rifle ammunition
 class RifleAmmunition(Ammunition):
@@ -37,6 +45,11 @@ class RifleAmmunition(Ammunition):
 
     def __str__(self):
         return f"{super().__str__()} | Type: {self.type}"
+    
+    def get_sort_key(self, key):
+        if key == 'caliber':
+            return f"R-{getattr(self, key)}"  # gives Rifle ammo higher sorting priority
+        return getattr(self, key)
 
 # Class to manage database
 class AmmunitionDatabase:
@@ -81,7 +94,7 @@ class AmmunitionDatabase:
             common_wt = Counter(weights).most_common(1)[0]
             print(f"Most common bullet weight: {common_wt[0]} ({common_wt[1]}x)")
 
-# Ammunition sorter
+# Ammunition sorter (using polymorphism)
 class AmmunitionSorter:
     @staticmethod
     def merge_sort(data, keys):
@@ -96,20 +109,32 @@ class AmmunitionSorter:
     def merge(left, right, keys):
         result = []
         while left and right:
-            l_val = tuple(getattr(left[0], k) for k in keys)
-            r_val = tuple(getattr(right[0], k) for k in keys)
+            l_val = tuple(left[0].get_sort_key(k) for k in keys)
+            r_val = tuple(right[0].get_sort_key(k) for k in keys)
             if l_val <= r_val:
                 result.append(left.pop(0))
             else:
                 result.append(right.pop(0))
         result += left + right
         return result
+    
 
-# Ammunition search
+# Ammunition search 
 class AmmunitionSearch:
     @staticmethod
-    def search(data, keyword):
+    def search_loop(data, keyword):
         return [ammo for ammo in data if keyword.lower() in str(ammo).lower()]
+
+    @staticmethod
+    def search_recursive(data, keyword, index=0, result=None):
+        if result is None:
+            result = []
+        if index >= len(data):
+            return result
+        if keyword.lower() in str(data[index]).lower():
+            result.append(data[index])
+        return AmmunitionSearch.search_recursive(data, keyword, index + 1, result)
+
 
 # Main input logic using inheritance
 def manual_input(ammo_db):
@@ -173,44 +198,59 @@ ammo_db = AmmunitionDatabase()
 
 # Menu system – would run interactively (uncomment for actual use)
 while True:
-     print("\n" + "="*50)
-     print("      🔍 Ammunition Database – Main Menu")
-     print("="*50)
-     print(" 1. ➕ Manual input")
-     print(" 2. 🔀 Sort data")
-     print(" 3. 🔎 Search data")
-     print(" 4. 📋 Display all entries")
-     print(" 5. 📊 Average grain per caliber")
-     print(" 6. 🧮 Multi-column sort")
-     print(" 7. 📈 Most common caliber & bullet weight")
-     print(" 8. 🚪 Exit")
-     print("="*50)
+    print("\n" + "=" * 50)
+    print("      🔍 Ammunition Database – Main Menu")
+    print("=" * 50)
+    print(" 1. ➕ Manual input")
+    print(" 2. 🔀 Sort data")
+    print(" 3. 🔎 Search data")
+    print(" 4. 📋 Display all entries")
+    print(" 5. 📊 Average grain per caliber")
+    print(" 6. 🧮 Multi-column sort")
+    print(" 7. 📈 Most common caliber & bullet weight")
+    print(" 8. 🚪 Exit")
+    print("=" * 50)
 
-     choice = input("Please enter your choice (1–8): ")
+    choice = input("Please enter your choice (1–8): ")
 
-     if choice == '1':
-         manual_input(ammo_db)
-     elif choice == '2':
-         key = input("Sort by (e.g., grain): ").strip()
-         ammo_db.ammo_list = AmmunitionSorter.merge_sort(ammo_db.ammo_list, [key])
-         ammo_db.display_all()
-     elif choice == '3':
-         term = input("Search term: ")
-         results = AmmunitionSearch.search(ammo_db.ammo_list, term)
-         for r in results:
-             print(r)
-     elif choice == '4':
-         ammo_db.display_all()
-     elif choice == '5':
-         ammo_db.average_grain()
-     elif choice == '6':
-         keys = input("Enter keys (comma-separated): ").split(',')
-         keys = [k.strip() for k in keys if k.strip()]
-         ammo_db.ammo_list = AmmunitionSorter.merge_sort(ammo_db.ammo_list, keys)
-         ammo_db.display_all()
-     elif choice == '7':
-         ammo_db.most_common()
-     elif choice == '8':
-         break
-     else:
-         print("Invalid choice.")
+    if choice == '1':
+        manual_input(ammo_db)
+
+    elif choice == '2':
+        key = input("Sort by (e.g., grain): ").strip()
+        ammo_db.ammo_list = AmmunitionSorter.merge_sort(ammo_db.ammo_list, [key])
+        ammo_db.display_all()
+
+    elif choice == '3':
+        term = input("Search term: ")
+        method = input("Use (1) Loop or (2) Recursion for search? ")
+        if method == '1':
+            results = AmmunitionSearch.search_loop(ammo_db.ammo_list, term)
+        elif method == '2':
+            results = AmmunitionSearch.search_recursive(ammo_db.ammo_list, term)
+        else:
+            print("Invalid search method.")
+            results = []
+        for r in results:
+            print(r)
+
+    elif choice == '4':
+        ammo_db.display_all()
+
+    elif choice == '5':
+        ammo_db.average_grain()
+
+    elif choice == '6':
+        keys = input("Enter keys (comma-separated): ").split(',')
+        keys = [k.strip() for k in keys if k.strip()]
+        ammo_db.ammo_list = AmmunitionSorter.merge_sort(ammo_db.ammo_list, keys)
+        ammo_db.display_all()
+
+    elif choice == '7':
+        ammo_db.most_common()
+
+    elif choice == '8':
+        break
+
+    else:
+        print("Invalid choice.")
