@@ -1,9 +1,10 @@
-# Re-execute the class definitions after environment reset
 
-# Re-defining classes after reset, now with proper inheritance usage
+#Imports
+from abc import ABC, abstractmethod
 
-# Base class
-class Ammunition:
+
+# AbstractAmmunition class
+class AbstractAmmunition(ABC):
     def __init__(self, id, lead_free, manufacturer, name, caliber, bullet_weight, grain, j_0m, j_150m, v_0m, v_150m):
         self.id = id
         self.lead_free = lead_free
@@ -17,6 +18,12 @@ class Ammunition:
         self.v_0m = v_0m
         self.v_150m = v_150m
 
+    @abstractmethod
+    def __str__(self):
+        pass
+
+# Ammunition 
+class Ammunition(AbstractAmmunition):
     def __str__(self):
         return (f"{self.id} | {self.lead_free} | {self.manufacturer} | {self.name} | "
                 f"{self.caliber} | {self.bullet_weight} | {self.grain} | "
