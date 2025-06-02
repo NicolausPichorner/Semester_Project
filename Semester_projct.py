@@ -1,6 +1,8 @@
 # Re-execute the class definitions after environment reset
 
-# Class: Ammunition (represents a single data entry)
+# Re-defining classes after reset, now with proper inheritance usage
+
+# Base class
 class Ammunition:
     def __init__(self, id, lead_free, manufacturer, name, caliber, bullet_weight, grain, j_0m, j_150m, v_0m, v_150m):
         self.id = id
@@ -20,8 +22,16 @@ class Ammunition:
                 f"{self.caliber} | {self.bullet_weight} | {self.grain} | "
                 f"{self.j_0m} | {self.j_150m} | {self.v_0m} | {self.v_150m}")
 
+# Subclass for rifle ammunition
+class RifleAmmunition(Ammunition):
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.type = "Rifle"
 
-# Class: AmmunitionDatabase (manages collection of Ammunition objects)
+    def __str__(self):
+        return f"{super().__str__()} | Type: {self.type}"
+
+# Class to manage database
 class AmmunitionDatabase:
     def __init__(self):
         self.ammo_list = []
@@ -29,7 +39,7 @@ class AmmunitionDatabase:
     def add_ammunition(self, ammo: Ammunition):
         for entry in self.ammo_list:
             if (entry.manufacturer.lower() == ammo.manufacturer.lower() and
-                    entry.name.lower() == ammo.name.lower()):
+                entry.name.lower() == ammo.name.lower()):
                 print("❌ Duplicate found.")
                 return False
         self.ammo_list.append(ammo)
@@ -64,8 +74,7 @@ class AmmunitionDatabase:
             common_wt = Counter(weights).most_common(1)[0]
             print(f"Most common bullet weight: {common_wt[0]} ({common_wt[1]}x)")
 
-
-# Class: AmmunitionSorter (handles sorting logic)
+# Ammunition sorter
 class AmmunitionSorter:
     @staticmethod
     def merge_sort(data, keys):
@@ -89,112 +98,17 @@ class AmmunitionSorter:
         result += left + right
         return result
 
-
-# Class: AmmunitionSearch (handles search functionality)
+# Ammunition search
 class AmmunitionSearch:
     @staticmethod
     def search(data, keyword):
         return [ammo for ammo in data if keyword.lower() in str(ammo).lower()]
 
-# Import required module for counting
-from collections import Counter
-
-# Recreate necessary classes in this context
-class Ammunition:
-    def __init__(self, id, lead_free, manufacturer, name, caliber, bullet_weight, grain, j_0m, j_150m, v_0m, v_150m):
-        self.id = id
-        self.lead_free = lead_free
-        self.manufacturer = manufacturer
-        self.name = name
-        self.caliber = caliber
-        self.bullet_weight = bullet_weight
-        self.grain = grain
-        self.j_0m = j_0m
-        self.j_150m = j_150m
-        self.v_0m = v_0m
-        self.v_150m = v_150m
-
-    def __str__(self):
-        return (f"{self.id} | {self.lead_free} | {self.manufacturer} | {self.name} | "
-                f"{self.caliber} | {self.bullet_weight} | {self.grain} | "
-                f"{self.j_0m} | {self.j_150m} | {self.v_0m} | {self.v_150m}")
-
-
-class AmmunitionDatabase:
-    def __init__(self):
-        self.ammo_list = []
-
-    def add_ammunition(self, ammo: Ammunition):
-        for entry in self.ammo_list:
-            if entry.manufacturer.lower() == ammo.manufacturer.lower() and entry.name.lower() == ammo.name.lower():
-                print("❌ Duplicate found.")
-                return False
-        self.ammo_list.append(ammo)
-        print("✅ Entry added.")
-        return True
-
-    def display_all(self):
-        if not self.ammo_list:
-            print("No data to display.")
-            return
-        print("\nID | LeadFree | Manufacturer | Name | Caliber | BulletWeight | Grain | J@0m | J@150m | V@0m | V@150m")
-        for ammo in self.ammo_list:
-            print(ammo)
-
-    def average_grain(self):
-        from collections import defaultdict
-        calibers = defaultdict(list)
-        for ammo in self.ammo_list:
-            calibers[ammo.caliber].append(ammo.grain)
-        for cal, grains in calibers.items():
-            avg = sum(grains) / len(grains)
-            print(f"{cal}: {avg:.2f}")
-
-    def most_common(self):
-        calibers = [ammo.caliber for ammo in self.ammo_list]
-        weights = [ammo.bullet_weight for ammo in self.ammo_list]
-        if calibers:
-            common_cal = Counter(calibers).most_common(1)[0]
-            print(f"Most common caliber: {common_cal[0]} ({common_cal[1]}x)")
-        if weights:
-            common_wt = Counter(weights).most_common(1)[0]
-            print(f"Most common bullet weight: {common_wt[0]} ({common_wt[1]}x)")
-
-
-class AmmunitionSorter:
-    @staticmethod
-    def merge_sort(data, keys):
-        if len(data) <= 1:
-            return data
-        mid = len(data) // 2
-        left = AmmunitionSorter.merge_sort(data[:mid], keys)
-        right = AmmunitionSorter.merge_sort(data[mid:], keys)
-        return AmmunitionSorter.merge(left, right, keys)
-
-    @staticmethod
-    def merge(left, right, keys):
-        result = []
-        while left and right:
-            l_val = tuple(getattr(left[0], k) for k in keys)
-            r_val = tuple(getattr(right[0], k) for k in keys)
-            if l_val <= r_val:
-                result.append(left.pop(0))
-            else:
-                result.append(right.pop(0))
-        result += left + right
-        return result
-
-
-class AmmunitionSearch:
-    @staticmethod
-    def search(data, keyword):
-        return [ammo for ammo in data if keyword.lower() in str(ammo).lower()]
-
-
-# Main Program Logic with OOP integration
+# Main input logic using inheritance
 def manual_input(ammo_db):
     print("Enter ammunition data (type 'done' anytime to stop):")
     allowed_calibers = ['.308', '30-06 Springfield', '300 Win Mag', '243']
+    rifle_calibers = ['.308', '30-06 Springfield', '300 Win Mag', '243']
     next_id = len(ammo_db.ammo_list) + 1
 
     while True:
@@ -235,10 +149,16 @@ def manual_input(ammo_db):
             print("Invalid input! Use numbers with '.' or ',' for decimal values.")
             continue
 
-        ammo = Ammunition(str(next_id), lead_free, manufacturer, name, caliber,
-                          bullet_weight, grain, j_0m, j_150m, v_0m, v_150m)
+        if caliber in rifle_calibers:
+            ammo = RifleAmmunition(str(next_id), lead_free, manufacturer, name, caliber,
+                                   bullet_weight, grain, j_0m, j_150m, v_0m, v_150m)
+        else:
+            ammo = Ammunition(str(next_id), lead_free, manufacturer, name, caliber,
+                              bullet_weight, grain, j_0m, j_150m, v_0m, v_150m)
+
         if ammo_db.add_ammunition(ammo):
             next_id += 1
+
 
 
 # Create the database instance
