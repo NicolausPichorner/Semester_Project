@@ -1,6 +1,8 @@
 
 #Imports
-from abc import ABC, abstractmethod
+from abc import ABC, abstractmethod 
+import time  
+import matplotlib.pyplot as plt
 
 
 # AbstractAmmunition class
@@ -123,17 +125,23 @@ class AmmunitionSorter:
 class AmmunitionSearch:
     @staticmethod
     def search_loop(data, keyword):
-        return [ammo for ammo in data if keyword.lower() in str(ammo).lower()]
+        start = time.perf_counter()
+        result = [ammo for ammo in data if keyword.lower() in str(ammo).lower()]
+        end = time.perf_counter()
+        print(f"⏱️ Loop Search took {end - start:.6f} seconds.")
+        return result
 
     @staticmethod
-    def search_recursive(data, keyword, index=0, result=None):
+    def search_recursive(data, keyword, index=0, result=None, timer_start=None):
         if result is None:
             result = []
+            timer_start = time.perf_counter()
         if index >= len(data):
+            print(f"⏱️ Recursive Search took {time.perf_counter() - timer_start:.6f} seconds.")
             return result
         if keyword.lower() in str(data[index]).lower():
             result.append(data[index])
-        return AmmunitionSearch.search_recursive(data, keyword, index + 1, result)
+        return AmmunitionSearch.search_recursive(data, keyword, index + 1, result, timer_start)
 
     @staticmethod
     def filter_by_logic(data):
@@ -147,14 +155,44 @@ class AmmunitionSearch:
             return []
 
         print("\nApplied Logic:\n(Lead-Free == True AND J@0m > threshold) OR (Speed@0m > threshold)")
+        start = time.perf_counter()
         result = []
         for ammo in data:
             condition_1 = (ammo.lead_free == 'yes') and (ammo.j_0m > energy_threshold)
             condition_2 = ammo.v_0m > speed_threshold
             if condition_1 or condition_2:
                 result.append(ammo)
+        end = time.perf_counter()
+        print(f"⏱️ Truth Table Filter took {end - start:.6f} seconds.")
         return result
 
+# Timing NR. 10 
+def visualize_timings():
+    methods = ['Loop Search', 'Recursive Search', 'Truth Table']
+    times = []
+
+    data = ammo_db.ammo_list
+    keyword = "Ammo-999"
+
+    # Measure Loop Search
+    start = time.perf_counter()
+    AmmunitionSearch.search_loop(data, keyword)
+    times.append(time.perf_counter() - start)
+
+    # Measure Recursive Search
+    start = time.perf_counter()
+    AmmunitionSearch.search_recursive(data, keyword)
+    times.append(time.perf_counter() - start)
+
+    # Measure Truth Table Filter
+    start = time.perf_counter()
+    AmmunitionSearch.filter_by_logic(data)
+    times.append(time.perf_counter() - start)
+
+    plt.bar(methods, times, color='skyblue')
+    plt.ylabel("Time in seconds")
+    plt.title("Algorithm Performance Comparison")
+    plt.show()
 
 
 # Main input logic using inheritance
@@ -217,6 +255,35 @@ def manual_input(ammo_db):
 # Create the database instance
 ammo_db = AmmunitionDatabase()
 
+#Dummy Data Generator
+import random
+
+def generate_dummy_data(ammo_db, count=5000):
+    calibers = ['.308', '30-06 Springfield', '300 Win Mag', '243']
+    manufacturers = ['Hornady', 'Winchester', 'Remington', 'Federal']
+    for i in range(1, count + 1):
+        lead_free = random.choice(['yes', 'no'])
+        manufacturer = random.choice(manufacturers)
+        name = f"Ammo-{i}"
+        caliber = random.choice(calibers)
+        bullet_weight = random.uniform(9.0, 15.0)
+        grain = random.uniform(130, 180)
+        j_0m = random.uniform(1800, 3200)
+        j_150m = j_0m * 0.7
+        v_0m = random.uniform(750, 950)
+        v_150m = v_0m * 0.8
+        if caliber in calibers:
+            ammo = RifleAmmunition(str(i), lead_free, manufacturer, name, caliber,
+                                   bullet_weight, grain, j_0m, j_150m, v_0m, v_150m)
+        else:
+            ammo = Ammunition(str(i), lead_free, manufacturer, name, caliber,
+                              bullet_weight, grain, j_0m, j_150m, v_0m, v_150m)
+        ammo_db.add_ammunition(ammo)
+
+# Dummy-Daten generieren
+generate_dummy_data(ammo_db, count=5000)
+
+
 # Menu system – would run interactively (uncomment for actual use)
 while True:
     print("\n" + "=" * 50)
@@ -230,7 +297,8 @@ while True:
     print(" 6. 🧮 Multi-column sort")
     print(" 7. 📈 Most common caliber & bullet weight")
     print(" 8. ⚙️ Logical filter (Truth Table Logic)")
-    print(" 9. 🚪 Exit")
+    print(" 9. 📊 Visualize timings")
+    print("10. 🚪 Exit")
     print("=" * 50)
 
     choice = input("Please enter your choice (1–9): ")
@@ -281,6 +349,9 @@ while True:
             print("No results matched your logical conditions.")
 
     elif choice == '9':
+        visualize_timings()
+
+    elif choice == '10':
         break
 
     else:
