@@ -135,6 +135,27 @@ class AmmunitionSearch:
             result.append(data[index])
         return AmmunitionSearch.search_recursive(data, keyword, index + 1, result)
 
+    @staticmethod
+    def filter_by_logic(data):
+        print("Filtering using logical conditions...")
+        print("You will now define the conditions:")
+        try:
+            energy_threshold = float(input("Minimum energy at 0m (e.g., 2000): "))
+            speed_threshold = float(input("Minimum speed at 0m (e.g., 800): "))
+        except ValueError:
+            print("Invalid input.")
+            return []
+
+        print("\nApplied Logic:\n(Lead-Free == True AND J@0m > threshold) OR (Speed@0m > threshold)")
+        result = []
+        for ammo in data:
+            condition_1 = (ammo.lead_free == 'yes') and (ammo.j_0m > energy_threshold)
+            condition_2 = ammo.v_0m > speed_threshold
+            if condition_1 or condition_2:
+                result.append(ammo)
+        return result
+
+
 
 # Main input logic using inheritance
 def manual_input(ammo_db):
@@ -208,10 +229,11 @@ while True:
     print(" 5. 📊 Average grain per caliber")
     print(" 6. 🧮 Multi-column sort")
     print(" 7. 📈 Most common caliber & bullet weight")
-    print(" 8. 🚪 Exit")
+    print(" 8. ⚙️ Logical filter (Truth Table Logic)")
+    print(" 9. 🚪 Exit")
     print("=" * 50)
 
-    choice = input("Please enter your choice (1–8): ")
+    choice = input("Please enter your choice (1–9): ")
 
     if choice == '1':
         manual_input(ammo_db)
@@ -250,6 +272,15 @@ while True:
         ammo_db.most_common()
 
     elif choice == '8':
+        results = AmmunitionSearch.filter_by_logic(ammo_db.ammo_list)
+        if results:
+            print("\nFiltered Ammunition:")
+            for r in results:
+                print(r)
+        else:
+            print("No results matched your logical conditions.")
+
+    elif choice == '9':
         break
 
     else:
