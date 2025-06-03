@@ -66,7 +66,7 @@ class AmmunitionDatabase:
                 print("❌ Duplicate found.")
                 return False
         self.ammo_list.append(ammo)
-        print("✅ Entry added.")
+        print("✅ Entry added. please write 'done' to exit.")
         return True
 
     def display_all(self):
@@ -253,55 +253,17 @@ def manual_input(ammo_db):
 
 
 
-# Create the database instance
-ammo_db = AmmunitionDatabase()
-
-# CSV Data import
-def load_ammunition_from_csv(filepath, ammo_db):
-    df = pd.read_csv(filepath, sep=';', engine='python')
-    df = df.dropna(axis=1, how='all')  # leere Spalten entfernen
-    df.columns = [col.strip().lower().replace(' ', '_') for col in df.columns]
-
-    for i, row in df.iterrows():
-        try:
-            ammo = RifleAmmunition(
-                str(i + 1),
-                'yes' if 'lead' in row.get('name', '').lower() else 'no',
-                row['manufacturer'],
-                row['name'],
-                str(row['caliber']),
-                float(str(row['bullet_weight']).strip().replace(',', '.')),
-                float(str(row['grain']).strip().replace(',', '.')),
-                float(str(row['j_0m']).strip().replace(',', '.')),
-                float(str(row['j_150m']).strip().replace(',', '.')),
-                float(str(row['v_0m']).strip().replace(',', '.')),
-                float(str(row['v_150m']).strip().replace(',', '.'))
-            )
-            ammo_db.add_ammunition(ammo)
-        except Exception as e:
-            print(f"⚠️ Error on row {i + 1}: {e}")
-
-# CSV save data
-def save_ammunition_to_csv(filepath, ammo_db):
-    data = [{
-        'ID': ammo.id,
-        'LeadFree': ammo.lead_free,
-        'Manufacturer': ammo.manufacturer,
-        'Name': ammo.name,
-        'Caliber': ammo.caliber,
-        'BulletWeight': ammo.bullet_weight,
-        'Grain': ammo.grain,
-        'J@0m': ammo.j_0m,
-        'J@150m': ammo.j_150m,
-        'V@0m': ammo.v_0m,
-        'V@150m': ammo.v_150m
-    } for ammo in ammo_db.ammo_list]
-    df = pd.DataFrame(data)
-    df.to_csv(filepath, sep=';', index=False)
-    print(f"✅ Saved {len(df)} entries to CSV.")
-
-
-
+# Choose data source at startup
+def startup_data_selection():
+    print("📦 Choose data source:")
+    print("1. Generate 5000 dummy entries")
+    print("2. Load from CSV (default: Ammunition1.csv)")
+    while True:
+        choice = input("Enter your choice (1 or 2): ").strip()
+        if choice in ['1', '2']:
+            return choice
+        else:
+            print("❌ Invalid input. Please enter 1 or 2.")
 
 #Dummy Data Generator
 import random
@@ -328,8 +290,67 @@ def generate_dummy_data(ammo_db, count=5000):
                               bullet_weight, grain, j_0m, j_150m, v_0m, v_150m)
         ammo_db.add_ammunition(ammo)
 
-# Dummy-Daten generieren
-generate_dummy_data(ammo_db, count=5000)
+# CSV Data import
+def load_ammunition_from_csv(filepath, ammo_db):
+    df = pd.read_csv(filepath, sep=';', engine='python')
+    df = df.dropna(axis=1, how='all')  # leere Spalten entfernen
+    df.columns = [col.strip().lower().replace(' ', '_') for col in df.columns]
+
+    for i, row in df.iterrows():
+        try:
+            ammo = RifleAmmunition(
+                str(i + 1),
+                'yes' if 'lead' in row.get('name', '').lower() else 'no',
+                row['manufacturer'],
+                row['name'],
+                str(row['caliber']),
+                float(str(row['bullet_weight']).strip().replace(',', '.')),
+                float(str(row['grain']).strip().replace(',', '.')),
+                float(str(row['j_0m']).strip().replace(',', '.')),
+                float(str(row['j_150m']).strip().replace(',', '.')),
+                float(str(row['v_0m']).strip().replace(',', '.')),
+                float(str(row['v_150m']).strip().replace(',', '.'))
+            )
+            ammo_db.add_ammunition(ammo)
+        except Exception as e:
+            print(f"⚠️ Error on row {i + 1}: {e}")
+
+
+# initialize database and load data
+ammo_db = AmmunitionDatabase()
+data_choice = startup_data_selection()
+
+if data_choice == '1':
+    generate_dummy_data(ammo_db, count=5000)
+    print("✅ Dummy data loaded.")
+elif data_choice == '2':
+    try:
+        load_ammunition_from_csv("Ammunition1.csv", ammo_db)
+        print("✅ CSV data loaded.")
+    except Exception as e:
+        print(f"❌ Failed to load CSV: {e}")
+else:
+    print("❌ Invalid choice. Exiting.")
+    exit(1) 
+
+# CSV save data
+def save_ammunition_to_csv(filepath, ammo_db):
+    data = [{
+        'ID': ammo.id,
+        'LeadFree': ammo.lead_free,
+        'Manufacturer': ammo.manufacturer,
+        'Name': ammo.name,
+        'Caliber': ammo.caliber,
+        'BulletWeight': ammo.bullet_weight,
+        'Grain': ammo.grain,
+        'J@0m': ammo.j_0m,
+        'J@150m': ammo.j_150m,
+        'V@0m': ammo.v_0m,
+        'V@150m': ammo.v_150m
+    } for ammo in ammo_db.ammo_list]
+    df = pd.DataFrame(data)
+    df.to_csv(filepath, sep=';', index=False)
+    print(f"✅ Saved {len(df)} entries to CSV.")
 
 
 # Menu system – would run interactively (uncomment for actual use)
@@ -351,7 +372,7 @@ while True:
     print("12. 🚪 Exit")
     print("=" * 50)
 
-    choice = input("Please enter your choice (1–9): ")
+    choice = input("Please enter your choice (1–12): ")
 
     if choice == '1':
         manual_input(ammo_db)
