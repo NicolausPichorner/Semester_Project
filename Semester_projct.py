@@ -145,7 +145,7 @@ class AmmunitionSearch:
         return result
 
      try:
-        text = str(data[index])  # bessere Schreibweise
+        text = str(data[index])  
         if keyword.lower() in text.lower():
             result.append(data[index])
      except RecursionError:
@@ -277,7 +277,7 @@ def manual_input(ammo_db):
 # Choose data source at startup
 def startup_data_selection():
     print("📦 Choose data source:")
-    print("1. Generate 5000 dummy entries")
+    print("1. Generate 900 dummy entries")
     print("2. Load from CSV (default: Ammunition1.csv)")
     while True:
         choice = input("Enter your choice (1 or 2): ").strip()
@@ -342,7 +342,7 @@ ammo_db = AmmunitionDatabase()
 data_choice = startup_data_selection()
 
 if data_choice == '1':
-    generate_dummy_data(ammo_db, count=5000)
+    generate_dummy_data(ammo_db, count=900)
     print("✅ Dummy data loaded.")
 elif data_choice == '2':
     try:
@@ -423,10 +423,31 @@ while True:
         ammo_db.average_grain()
 
     elif choice == '6':
-        keys = input("Enter keys (comma-separated): ").split(',')
-        keys = [k.strip() for k in keys if k.strip()]
-        ammo_db.ammo_list = AmmunitionSorter.merge_sort(ammo_db.ammo_list, keys)
-        ammo_db.display_all()
+         keys = input("Enter keys (comma-separated): ").split(',')
+         keys = [k.strip() for k in keys if k.strip()]
+    
+   
+         valid_keys = []
+         if ammo_db.ammo_list:
+             sample = ammo_db.ammo_list[0]
+             for k in keys:
+                 if hasattr(sample, k):
+                   valid_keys.append(k)
+             else:
+                print(f"⚠️ Invalid key: '{k}' – ignored.")
+         else:
+           print("⚠️ Ammo list is empty – cannot sort.")
+           continue
+
+         if valid_keys:
+             try:
+                 ammo_db.ammo_list = AmmunitionSorter.merge_sort(ammo_db.ammo_list, valid_keys)
+                 print("✅ Sorted successfully.")
+                 ammo_db.display_all()
+             except Exception as e:
+              print(f"❌ Sorting failed: {e}")
+         else:
+              print("❌ No valid sort keys entered. Nothing was sorted.")
 
     elif choice == '7':
         ammo_db.most_common()
