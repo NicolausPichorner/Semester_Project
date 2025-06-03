@@ -33,8 +33,9 @@ class AbstractAmmunition(ABC):
 class Ammunition(AbstractAmmunition):
     def __str__(self):
         return (f"{self.id} | {self.lead_free} | {self.manufacturer} | {self.name} | "
-                f"{self.caliber} | {self.bullet_weight} | {self.grain} | "
-                f"{self.j_0m} | {self.j_150m} | {self.v_0m} | {self.v_150m}")
+            f"{self.caliber} | {self.bullet_weight:.1f} | {self.grain:.1f} | "
+            f"{self.j_0m:.1f} | {self.j_150m:.1f} | {self.v_0m:.1f} | {self.v_150m:.1f}")
+
     
     def get_sort_key(self, key):
         return getattr(self, key)
@@ -47,7 +48,9 @@ class RifleAmmunition(Ammunition):
         self.type = "Rifle"
 
     def __str__(self):
-        return f"{super().__str__()} | Type: {self.type}"
+        return (f"{self.id} | {self.lead_free} | {self.manufacturer} | {self.name} | "
+            f"{self.caliber} | {self.bullet_weight:.1f} | {self.grain:.1f} | "
+            f"{self.j_0m:.1f} | {self.j_150m:.1f} | {self.v_0m:.1f} | {self.v_150m:.1f} | Type: {self.type}")
     
     def get_sort_key(self, key):
         if key == 'caliber':
@@ -133,15 +136,25 @@ class AmmunitionSearch:
 
     @staticmethod
     def search_recursive(data, keyword, index=0, result=None, timer_start=None):
-        if result is None:
-            result = []
-            timer_start = time.perf_counter()
-        if index >= len(data):
-            print(f"⏱️ Recursive Search took {time.perf_counter() - timer_start:.6f} seconds.")
-            return result
-        if keyword.lower() in str(data[index]).lower():
+     if result is None:
+        result = []
+        timer_start = time.perf_counter()
+
+     if index >= len(data):
+        print(f"⏱️ Recursive Search took {time.perf_counter() - timer_start:.6f} seconds.")
+        return result
+
+     try:
+        text = str(data[index])  # bessere Schreibweise
+        if keyword.lower() in text.lower():
             result.append(data[index])
-        return AmmunitionSearch.search_recursive(data, keyword, index + 1, result, timer_start)
+     except RecursionError:
+        print("⚠️ Recursion error during string conversion.")
+
+   
+     return AmmunitionSearch.search_recursive(data, keyword, index + 1, result, timer_start)
+
+
 
     @staticmethod
     def filter_by_logic(data):
@@ -443,6 +456,7 @@ while True:
         save_ammunition_to_csv(path, ammo_db)
 
     elif choice == '12':
+        print("Exiting the program. Goodbye!")
         break
 
     else:
