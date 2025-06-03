@@ -3,6 +3,7 @@
 from abc import ABC, abstractmethod 
 import time  
 import matplotlib.pyplot as plt
+import pandas as pd
 
 
 # AbstractAmmunition class
@@ -255,6 +256,53 @@ def manual_input(ammo_db):
 # Create the database instance
 ammo_db = AmmunitionDatabase()
 
+# CSV Data import
+def load_ammunition_from_csv(filepath, ammo_db):
+    df = pd.read_csv(filepath, sep=';', engine='python')
+    df = df.dropna(axis=1, how='all')  # leere Spalten entfernen
+    df.columns = [col.strip().lower().replace(' ', '_') for col in df.columns]
+
+    for i, row in df.iterrows():
+        try:
+            ammo = RifleAmmunition(
+                str(i + 1),
+                'yes' if 'lead' in row.get('name', '').lower() else 'no',
+                row['manufacturer'],
+                row['name'],
+                str(row['caliber']),
+                float(str(row['bullet_weight']).strip().replace(',', '.')),
+                float(str(row['grain']).strip().replace(',', '.')),
+                float(str(row['j_0m']).strip().replace(',', '.')),
+                float(str(row['j_150m']).strip().replace(',', '.')),
+                float(str(row['v_0m']).strip().replace(',', '.')),
+                float(str(row['v_150m']).strip().replace(',', '.'))
+            )
+            ammo_db.add_ammunition(ammo)
+        except Exception as e:
+            print(f"⚠️ Error on row {i + 1}: {e}")
+
+# CSV save data
+def save_ammunition_to_csv(filepath, ammo_db):
+    data = [{
+        'ID': ammo.id,
+        'LeadFree': ammo.lead_free,
+        'Manufacturer': ammo.manufacturer,
+        'Name': ammo.name,
+        'Caliber': ammo.caliber,
+        'BulletWeight': ammo.bullet_weight,
+        'Grain': ammo.grain,
+        'J@0m': ammo.j_0m,
+        'J@150m': ammo.j_150m,
+        'V@0m': ammo.v_0m,
+        'V@150m': ammo.v_150m
+    } for ammo in ammo_db.ammo_list]
+    df = pd.DataFrame(data)
+    df.to_csv(filepath, sep=';', index=False)
+    print(f"✅ Saved {len(df)} entries to CSV.")
+
+
+
+
 #Dummy Data Generator
 import random
 
@@ -298,7 +346,9 @@ while True:
     print(" 7. 📈 Most common caliber & bullet weight")
     print(" 8. ⚙️ Logical filter (Truth Table Logic)")
     print(" 9. 📊 Visualize timings")
-    print("10. 🚪 Exit")
+    print("10. 📂 Load from CSV")
+    print("11. 💾 Save to CSV")
+    print("12. 🚪 Exit")
     print("=" * 50)
 
     choice = input("Please enter your choice (1–9): ")
@@ -352,6 +402,18 @@ while True:
         visualize_timings()
 
     elif choice == '10':
+        path = input("Enter CSV filepath (or press Enter for 'Ammunition1.csv'): ").strip()
+        if not path:
+            path = "Ammunition1.csv"
+        load_ammunition_from_csv(path, ammo_db)
+
+    elif choice == '11':
+        path = input("Enter filename to save (or press Enter for 'export.csv'): ").strip()
+        if not path:
+            path = "export.csv"
+        save_ammunition_to_csv(path, ammo_db)
+
+    elif choice == '12':
         break
 
     else:
