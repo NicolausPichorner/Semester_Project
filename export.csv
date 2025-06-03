@@ -1,0 +1,14 @@
+ID;LeadFree;Manufacturer;Name;Caliber;BulletWeight;Grain;J@0m;J@150m;V@0m;V@150m
+1;yes;Geco ;Zero ;308;8.8;136.0;3330.0;2403.0;870.0;739.0
+2;yes;Geco ;Star;308;10.7;165.0;3280.0;2689.0;783.0;709.0
+3;yes;Sax;KJG lead free;308;8.0;123.4;3454.0;2734.0;929.0;827.0
+4;yes;Sellier & Bellot;tipped eXergy blue;308;10.7;165.0;3675.0;3056.0;829.0;756.0
+5;yes;Sellier & Bellot;eXergy EDGE;308;10.7;165.0;3677.0;1968.0;829.0;745.0
+6;yes;Sellier & Bellot;eXergy Bleifrei;308;11.7;180.0;3697.0;2842.0;795.0;697.0
+7;yes;SAKO;Powerhead Blade;308;10.5;162.0;3487.0;2878.0;815.0;740.0
+8;yes;Hornady;Superformance CX;308;10.7;165.0;3756.0;3174.0;838.0;770.0
+9;yes;Hornady;Superformance CXS;308;9.7;150.0;3771.0;3171.0;881.0;808.0
+10;yes;RWS;Hit;308;10.7;165.0;3606.0;3017.0;821.0;751.0
+11;yes;Federal ;Trophy Copper bleifrei;308;9.7;150.0;3592.0;3124.0;860.0;802.0
+12;yes;Federal ;Power Shok Copper HP;308;9.7;150.0;3596.0;2755.0;860.0;753.0
+13;yes;Norma;Ecostrike;308;10.7;165.0;3339.0;2789.0;790.0;722.0
