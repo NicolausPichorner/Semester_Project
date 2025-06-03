@@ -68,7 +68,6 @@ class AmmunitionDatabase:
         self.ammo_list.append(ammo)
         print("✅ Entry added. please write 'done' to exit.")
         return True
-
     def display_all(self):
         if not self.ammo_list:
             print("No data to display.")
@@ -175,25 +174,34 @@ def visualize_timings():
     data = ammo_db.ammo_list
     keyword = "Ammo-999"
 
-    # Measure Loop Search
+        # Measure Loop Search
     start = time.perf_counter()
     AmmunitionSearch.search_loop(data, keyword)
     times.append(time.perf_counter() - start)
 
-    # Measure Recursive Search
+          # Measure Recursive Search
     start = time.perf_counter()
     AmmunitionSearch.search_recursive(data, keyword)
     times.append(time.perf_counter() - start)
 
-    # Measure Truth Table Filter
+           # Simulate truth table filter with fixed values to avoid input()
     start = time.perf_counter()
-    AmmunitionSearch.filter_by_logic(data)
+    dummy_result = []
+    for ammo in data:
+        condition_1 = (ammo.lead_free == 'yes') and (ammo.j_0m > 2500)
+        condition_2 = ammo.v_0m > 850
+        if condition_1 or condition_2:
+            dummy_result.append(ammo)
     times.append(time.perf_counter() - start)
 
+           # Plot
     plt.bar(methods, times, color='skyblue')
     plt.ylabel("Time in seconds")
     plt.title("Algorithm Performance Comparison")
+    plt.tight_layout()
     plt.show()
+
+    print("\n📊 Timing visualization completed. Returning to main menu...")
 
 
 # Main input logic using inheritance
@@ -300,7 +308,7 @@ def load_ammunition_from_csv(filepath, ammo_db):
         try:
             ammo = RifleAmmunition(
                 str(i + 1),
-                'yes' if 'lead' in row.get('name', '').lower() else 'no',
+                str(row['lead_free']).strip().lower(),
                 row['manufacturer'],
                 row['name'],
                 str(row['caliber']),
