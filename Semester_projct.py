@@ -57,7 +57,7 @@ class RifleAmmunition(Ammunition):
             return f"R-{getattr(self, key)}"  # gives Rifle ammo higher sorting priority
         return getattr(self, key)
 
-# Class to manage database
+# 1&5 Class to manage database
 class AmmunitionDatabase:
     def __init__(self):
         self.ammo_list = []
@@ -99,7 +99,7 @@ class AmmunitionDatabase:
             common_wt = Counter(weights).most_common(1)[0]
             print(f"Most common bullet weight: {common_wt[0]} ({common_wt[1]}x)")
 
-# Ammunition sorter (using polymorphism)
+# 2. Ammunition sorter (using polymorphism) 
 class AmmunitionSorter:
     @staticmethod
     def merge_sort(data, keys):
@@ -124,7 +124,7 @@ class AmmunitionSorter:
         return result
     
 
-# Ammunition search 
+# 3. Ammunition search 
 class AmmunitionSearch:
     @staticmethod
     def search_loop(data, keyword):
@@ -179,7 +179,7 @@ class AmmunitionSearch:
         print(f"⏱️ Truth Table Filter took {end - start:.6f} seconds.")
         return result
 
-# Timing NR. 10 
+# 10. Visualize Timing  
 def visualize_timings():
     methods = ['Loop Search', 'Recursive Search', 'Truth Table']
     times = []
@@ -217,7 +217,7 @@ def visualize_timings():
     print("\n📊 Timing visualization completed. Returning to main menu...")
 
 
-# Main input logic using inheritance
+# 1. Main input logic using inheritance
 def manual_input(ammo_db):
     print("Enter ammunition data (type 'done' anytime to stop):")
     allowed_calibers = ['.308', '30-06 Springfield', '300 Win Mag', '243']
